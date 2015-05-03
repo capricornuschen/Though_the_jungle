@@ -1,0 +1,223 @@
+<?xml version = "1.0"?>
+<GameData>
+<!-- screenTitle is also used to identify you and your animation. 
+     So make sure to include your name as part of the screenTitle -->
+<screenTitle>Zian Chen's Animation</screenTitle>
+<maxStringSize>50</maxStringSize>
+<numberOfevils>10</numberOfevils>
+<collisionStrategy>2</collisionStrategy>
+<safeDistance>75</safeDistance>
+
+<frameCap>60</frameCap>
+<framesAreCapped>true</framesAreCapped>
+
+<frameMax>200</frameMax>
+<username>zianc</username>
+
+<view>
+  <width>854</width>
+  <height>480</height>
+</view>
+
+<world>
+  <width>5000</width>
+  <height>1000</height>
+</world>
+
+<world1>
+  <file>images/ps/1.png</file>
+  <red>193</red>
+  <green>205</green>
+  <blue>205</blue>
+  <factor>1</factor>
+  <srcX>0</srcX>
+  <srcY>0</srcY>
+  <width>1000</width>
+  <height>1000</height>
+  <transparency>true</transparency>
+</world1>
+
+<world2>
+  <file>images/ps/2.png</file>
+  <red>193</red>
+  <green>205</green>
+  <blue>205</blue>
+  <factor>1</factor>
+  <srcX>0</srcX>
+  <srcY>0</srcY>
+  <width>1000</width>
+  <height>1000</height>
+  <transparency>true</transparency>
+</world2>
+
+<world3>
+  <file>images/ps/3.png</file>
+  <red>193</red>
+  <green>205</green>
+  <blue>205</blue>
+  <factor>1</factor>
+  <srcX>0</srcX>
+  <srcY>0</srcY>
+  <width>1000</width>
+  <height>1000</height>
+  <transparency>true</transparency>
+</world3>
+
+<world4>
+  <file>images/ps/4.png</file>
+  <red>193</red>
+  <green>205</green>
+  <blue>205</blue>
+  <factor>1</factor>
+  <srcX>0</srcX>
+  <srcY>0</srcY>
+  <width>1000</width>
+  <height>1000</height>
+  <transparency>true</transparency>
+</world4>
+
+<world5>
+  <file>images/ps/5.png</file>
+  <red>193</red>
+  <green>205</green>
+  <blue>205</blue>
+  <factor>1</factor>
+  <srcX>0</srcX>
+  <srcY>0</srcY>
+  <width>1000</width>
+  <height>1000</height>
+  <transparency>false</transparency>
+</world5>
+
+<back>
+  <file>images/checkerboard.bmp</file>
+  <red>112</red>
+  <green>128</green>
+  <blue>144</blue>
+  <factor>1</factor>
+  <srcX>0</srcX>
+  <srcY>0</srcY>
+  <width>960</width>
+  <height>960</height>
+  <transparency>false</transparency>
+</back>
+
+<font name="font">
+  <file>font/dyslexic-bold.otf</file>
+  <size>16</size>
+  <red>255</red>
+  <green>137</green>
+  <blue>90</blue>
+  <unused>0</unused>
+</font>
+
+<leopard>
+  <file>images/sprite3.png</file>
+  <startLoc x="120" y="750"/>
+  <frames>8</frames>
+  <frameInterval>10</frameInterval>
+  <srcX>0</srcX>
+  <srcY>0</srcY>
+  <width>200</width>
+  <height>100</height> 
+  <speedX>400</speedX>
+  <speedY>300</speedY>
+  <transparency>true</transparency>
+</leopard>
+
+<leopardexp>
+  <file>images/playerExp.png</file>
+  <startLoc x="120" y="750"/>
+  <frames>21</frames>
+  <frameInterval>10</frameInterval>
+  <srcX>0</srcX>
+  <srcY>0</srcY>
+  <width>208</width>
+  <height>104</height> 
+  <speedX>400</speedX>
+  <speedY>300</speedY>
+  <transparency>true</transparency>
+</leopardexp>
+
+<fly>
+  <file>images/Bone.png</file>
+  <startLoc x="70" y="100"/>
+  <frames>3</frames>
+  <frameInterval>200</frameInterval>
+  <srcX>0</srcX>
+  <srcY>0</srcY>
+  <width>172</width>
+  <height>171</height>
+  <speedX>200</speedX>
+  <speedY>30</speedY>
+  <transparency>true</transparency>
+</fly>
+
+<drop>
+  <file>images/star.png</file>
+  <startLoc x="70" y="100"/>
+  <numberOfStars>30</numberOfStars>
+  <MeteorInterval>5</MeteorInterval>  
+  <srcX>700</srcX>
+  <srcY>20</srcY>
+  <width>312</width>
+  <height>240</height> 
+  <speedX>-100</speedX>
+  <speedY>100</speedY>
+  <Distance>700</Distance>
+  <transparency>true</transparency>
+</drop>
+
+<dragonbullet_right>
+  <file>images/fire_right.png</file>
+  <startLoc x="70" y="100"/>
+  <srcX>0</srcX>
+  <srcY>0</srcY>
+  <width>166</width>
+  <height>60</height>
+  <speedX>200</speedX>
+  <speedY>30</speedY>
+  <transparency>true</transparency>
+</dragonbullet_right>
+
+<dragonbullet_left>
+  <file>images/fire_left.png</file>
+  <startLoc x="70" y="100"/>
+  <srcX>0</srcX>
+  <srcY>0</srcY>
+  <width>166</width>
+  <height>60</height>
+  <speedX>200</speedX>
+  <speedY>30</speedY>
+  <transparency>true</transparency>
+</dragonbullet_left>
+
+<evil>
+  <file>images/evil2.png</file>
+  <srcX>0</srcX>
+  <srcY>0</srcY>
+  <width>63</width>
+  <height>97</height>
+  <startLoc x="320" y="240"/>
+  <speed x="-175" y="175"/>
+  <transparency>true</transparency>
+  <chunk>
+    <size>9</size>
+    <distance>200</distance>
+  </chunk>
+</evil>
+
+<halo>
+  <file>images/halo.png</file>
+  <frames>1</frames>
+  <srcX>0</srcX>
+  <srcY>0</srcY>
+  <width>300</width>
+  <height>300</height>
+  <startLoc x="120" y="700"/>
+  <speedX>250</speedX>
+  <speedY>350</speedY>
+  <transparency>true</transparency>
+</halo>
+
+</GameData>

@@ -1,0 +1,65 @@
+#include <vector>
+#include <list>
+#include <SDL.h>
+#include "ioManager.h"
+#include "player.h"
+#include "world.h"
+#include "viewport.h"
+#include "hud.h"
+#include "meteors.h"
+#include "sound.h"
+#include <string>
+
+class Manager {
+public:
+  Manager ();
+  ~Manager ();
+  void resetgame();
+  void play();
+  void pause() { clock.pause(); }
+  void unpause() { clock.unpause(); }
+  void setNumberOfSprites(int);
+
+private:
+  const bool env;
+  const IOManager& io;
+  const Gamedata& gdata;
+  Clock& clock;
+
+  SDL_Surface * const screen;
+  World world1;
+  World world2;
+  World world3;
+  World world4;
+  World world5;
+  Hud hud;
+  SDLSound sound;
+  Viewport& viewport;
+  SDL_Surface* starSurface;
+  Player player;
+  std::vector<Drawable*> sprites;
+  std::vector<Drawable*> evilsprites;
+  unsigned int numberOfSmart;
+  //int currentSprite;
+  int meteorsTime;
+  bool makeVideo;
+  int frameCount;
+  const std::string username;
+  const std::string title;
+  const int frameMax;
+  Meteors meteors;
+  //std::vector<Drawable*> drops;
+  //std::list<ExplodingSprite*> explodingDrops;
+
+  void draw() ;
+  bool checkForCollisions(Meteors&);
+  void checkForCollisions();
+  void gethudinfo();
+  void update();
+  void makeStar();
+  void printStar() const;
+  Manager(const Manager&);
+  Manager& operator=(const Manager&);
+  void makeFrame();
+};
+

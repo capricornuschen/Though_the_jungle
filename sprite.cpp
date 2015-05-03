@@ -1,0 +1,104 @@
+#include <cmath>
+#include "sprite.h"
+#include "player.h"
+#include "gamedata.h"
+#include "frameFactory.h"
+#include "collisionStrategy.h"
+
+double getRandomNum(int start,int end){
+  double number = Gamedata::getInstance().getRandInRange(start,end);
+  return number;
+}
+
+Sprite::Sprite(const std::string& name) :
+  Drawable(name,
+                  Vector2f(Gamedata::getInstance().getXmlInt(name+"/startLoc/x"),
+                  Gamedata::getInstance().getXmlInt(name+"/startLoc/y")), 
+                  Gamedata::getInstance().getNewVelocity() 
+           ),
+  frame( FrameFactory::getInstance().getFrame(name) ),
+  frameWidth(frame->getWidth()),
+  frameHeight(frame->getHeight()),
+  worldWidth(Gamedata::getInstance().getXmlInt("world/width")),
+  worldHeight(Gamedata::getInstance().getXmlInt("world/height")),
+  strategy( Gamedata::getInstance().getStrategy() )
+{ }
+
+Sprite::Sprite(const string& n, const Vector2f& pos, const Vector2f& vel):
+  Drawable(n, pos, vel), 
+  frame( FrameFactory::getInstance().getFrame(n) ),
+  frameWidth(frame->getWidth()),
+  frameHeight(frame->getHeight()),
+  worldWidth(Gamedata::getInstance().getXmlInt("world/width")),
+  worldHeight(Gamedata::getInstance().getXmlInt("world/height")),
+  strategy( Gamedata::getInstance().getStrategy() )
+{ }
+
+Sprite::Sprite(const string& n, const Vector2f& pos, const Vector2f& vel,
+               const Frame* frm):
+  Drawable(n, pos, vel), 
+  frame( frm ),
+  frameWidth(frame->getWidth()),
+  frameHeight(frame->getHeight()),
+  worldWidth(Gamedata::getInstance().getXmlInt("world/width")),
+  worldHeight(Gamedata::getInstance().getXmlInt("world/height")),
+  strategy( Gamedata::getInstance().getStrategy() )
+{ }
+
+Sprite::Sprite(const Sprite& s) :
+  Drawable(s), 
+  frame(s.frame),
+  frameWidth(s.getFrame()->getWidth()),
+  frameHeight(s.getFrame()->getHeight()),
+  worldWidth(Gamedata::getInstance().getXmlInt("world/width")),
+  worldHeight(Gamedata::getInstance().getXmlInt("world/height")),
+  strategy( s.strategy )
+{ }
+
+Sprite& Sprite::operator=(const Sprite& rhs) {
+  Drawable::operator=( rhs );
+  frame = rhs.frame;
+  frameWidth = rhs.frameWidth;
+  frameHeight = rhs.frameHeight;
+  worldWidth = rhs.worldWidth;
+  worldHeight = rhs.worldHeight;
+  return *this;
+}
+
+bool Sprite::collidedWith(const Drawable* d) const {
+  return strategy->execute(*this, *d);
+}
+
+void Sprite::draw() const { 
+  // X() get position which was set by initialize position for class Drawable in Sprite Constructor.because Sprite is a subclass of Drawable. In this case, X() and Y() are startLoc in Xml.
+  Uint32 x = static_cast<Uint32>(X());
+  Uint32 y = static_cast<Uint32>(Y());
+  frame->draw(x, y); 
+}
+
+int Sprite::getDistance(const Sprite *obj) const { 
+  return hypot(X()-obj->X(), Y()-obj->Y());
+}
+
+void Sprite::update(Uint32 ticks) { 
+  Vector2f incr = getVelocity() * static_cast<float>(ticks) * 0.001;
+  setPosition(getPosition() + incr);
+/*
+  if ( Y() < 0) {
+    velocityY( abs( velocityY() ) );
+  }
+
+  if ( Y() > worldHeight-frameHeight) {
+    velocityY( -abs( velocityY() ) );
+  }
+
+  if ( X() < 0) {
+    velocityX( abs( velocityX() ) );
+  }
+
+  if ( X() > worldWidth-frameWidth) {
+    velocityX( -abs( velocityX() ) );
+  }  
+*/
+}
+

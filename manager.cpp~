@@ -1,0 +1,384 @@
+#include <iostream>
+#include <string>
+#include <iomanip>
+#include "multisprite.h"
+#include "sprite.h"
+#include "explodingSprite.h"
+#include "smartSprite.h"
+#include "dragonsprite.h"
+#include "gamedata.h"
+#include "manager.h"
+using namespace std;
+
+
+double getRandomFactor(int start,int end){
+  double number = Gamedata::getInstance().getRandInRange(start,end);
+  return number;
+}
+
+Manager::~Manager() { 
+  // These deletions eliminate "definitely lost" and
+  // "still reachable"s in Valgrind.
+  SDL_FreeSurface(starSurface);
+  for (unsigned i = 0; i < sprites.size(); ++i) {
+    delete sprites[i];
+  }
+  for (unsigned int j = 0; j < evilsprites.size(); ++j) {
+    delete evilsprites[i];
+  }
+
+}
+
+Manager::Manager() :
+  env( SDL_putenv(const_cast<char*>("SDL_VIDEO_CENTERED=center")) ),
+  io( IOManager::getInstance() ),
+  gdata(Gamedata::getInstance()),
+  clock( Clock::getInstance() ),
+  screen( io.getScreen() ),
+  world1("world1", 5 ),
+  world2("world2", 4 ),
+  world3("world3", 3 ),
+  world4("world4", 2 ),
+  world5("world5", 1 ),
+  hud(),
+  winhud(),
+  sound(),
+  viewport( Viewport::getInstance() ),
+  starSurface( io.loadAndSet(gdata.getXmlStr("drop/file"),
+                  gdata.getXmlBool("drop/transparency"))),
+  player("leopard"),
+  sprites(),
+  evilsprites(),
+  numberOfSmart(0),
+  meteorsTime(1000),
+  makeVideo( false ),
+  frameCount( 0 ),
+  username(  Gamedata::getInstance().getXmlStr("username") ),
+  title( Gamedata::getInstance().getXmlStr("screenTitle") ),
+  frameMax( Gamedata::getInstance().getXmlInt("frameMax") ),
+  meteors("drop")
+{
+  if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+    throw string("Unable to initialize SDL: ");
+  }
+  SDL_WM_SetCaption(title.c_str(), NULL);
+  atexit(SDL_Quit);
+
+  //sprites.push_back( new DragonSprite("fly") );
+  //sprites.push_back( new Sprite("star") );
+  //sprites.push_back( new Sprite("greenorb") );
+  //viewport.setObjectToTrack(sprites[currentSprite]);
+
+  unsigned int n = Gamedata::getInstance().getXmlInt("numberOfevils");
+  for (unsigned int i = 0; i < n; ++i) {
+    evilsprites.push_back( new EvilSprite("evil") );
+  }
+
+  viewport.setObjectToTrack(player.getSprite());
+}
+
+double zoom = 1.0;
+double oldzoom = 1.0;
+bool scan = false;
+bool showhud = false;
+bool showshield = false;
+bool nocollisioncheck = false;
+double angle = 0.0;
+
+bool Manager::checkForCollisions(Meteors& meteors) {
+
+  list<Meteor> mlist = meteors.getmeteorlist();
+  list<Meteor> flist = meteors.getfreelist();
+  list<Meteor>::iterator miterator = mlist.begin();
+  while ( miterator != mlist.end() ) {
+    // &(*miterator)) do make difference because miterator is just a iterator pointer but &(*miterator)) is a pointer point to a meteor object. 
+
+    if ( player.collidedWith(&(*miterator)) ) {
+      flist.push_back(*miterator);
+      miterator = mlist.erase(miterator);
+      return true;
+    }
+    ++miterator;
+  }
+  return false;
+}
+
+void Manager::checkForCollisions() {
+  Sprite* leoplayer = static_cast<Sprite*>( player.getSprite() );
+  for (unsigned i = 0; i < evilsprites.size(); ++i) {
+    ExplodingSprite* e = dynamic_cast<ExplodingSprite*>(evilsprites[i]);
+    EvilSprite* esprite = static_cast<EvilSprite*>( evilsprites[i] );
+
+    if ( !e && player.collidedWith(&(*esprite)) ) { 
+      evilsprites[i] = new ExplodingSprite(esprite);
+      delete esprite;
+    }
+
+    if ( e && e->chunkCount() == 0 ) { 
+      // Make a smart sprite
+      evilsprites[i] = new SmartSprite(esprite->getName(), 
+        esprite->getPosition(), *leoplayer); 
+      delete esprite;
+      ++numberOfSmart;
+    }
+
+  }
+}
+
+void Manager::setNumberOfSprites(int number) {
+  if ( number > static_cast<int>( evilsprites.size() ) ) {
+    number = (number - sprites.size())/2;
+    for (int i = 0; i < number; ++i) {
+      evilsprites.push_back( new EvilSprite("evil") );
+    }
+  }
+  else {
+    number = evilsprites.size() - number;
+    for (int i = 0; i < number; ++i) {
+      delete evilsprites.back();
+      evilsprites.pop_back();
+    }
+  }
+}
+
+void Manager::draw() {
+  world5.draw();
+  world4.draw();
+  world3.draw();
+  world2.draw();
+  world1.draw();
+
+  meteors.draw();
+  for (unsigned i = 0; i < evilsprites.size(); ++i) {
+    evilsprites[i]->draw();
+  }
+
+  io.printMessageValueAt("Safe Distance: ", 
+    SmartSprite::getSafeDistance(), 320, 40);
+  static unsigned int seconds = 0;
+  if ( clock.getSeconds() > seconds ) {
+    seconds = clock.getSeconds();
+  }
+  //unsigned noSprites = evilsprites.size();
+  /*
+  io.printMessageValueAt("Total sprites: ", noSprites, 380, 50);
+  io.printMessageValueAt("Smart sprites: ", 
+     std::min(noSprites, numberOfSmart), 380, 70);
+  */
+  player.draw(); 
+  //cout<<"frameName is :"<< Vector2f(Gamedata::getInstance().getXmlInt("leopard/startLoc/x"), Gamedata::getInstance().getXmlInt("leopard/startLoc/y"))<<endl;
+  if ( checkForCollisions(meteors) ) {
+    io.printMessageAt("*** Oops ***, collision!", 320, 70);
+    //io.printMessageAt("***", player.getX()-viewport.X(), player.getY()-viewport.Y()-10);
+    //io.printMessageAt("***", player.getX()-viewport.X(), player.getY()-viewport.Y()+20);
+    if (!nocollisioncheck){
+      player.Pchangeflag();
+    }	
+  }
+  else {
+    io.printMessageAt("****No Collision.", 320, 70);    
+  }
+
+  for (unsigned i = 0; i < sprites.size(); ++i) {
+    sprites[i]->draw();
+  }
+
+  std::stringstream strm;
+  int playerX = static_cast<int>(player.getX());
+  int playerY = static_cast<int>(player.getY());
+  int worldWidth = static_cast<int>(gdata.getXmlInt("world/width"));
+
+  strm << "Player at: (" << playerX << ", " << playerY << ")";
+  io.printMessageAt(strm.str(), 320, 10);
+
+  viewport.draw();
+  
+  int startX = 10;
+  int startY = 10;
+  unsigned int msize = meteors.meteorCount();
+  unsigned int fsize = meteors.freeCount();
+
+  if(clock.getSeconds() <= 3){
+    hud.drawHUD(screen, startX, startY, msize, fsize);
+  }
+  if(clock.getSeconds() > 3 && showhud){
+    hud.drawHUD(screen, startX, startY, msize, fsize);
+  }
+  if(playerX >= worldWidth-200){
+    winhud.drawwinHUD(screen, startX, startY);
+  }
+  SDL_Flip(screen);
+}
+
+void Manager::makeFrame() {
+  std::stringstream strm;
+  strm << "frames/" << username<< '.' 
+       << std::setfill('0') << std::setw(4) 
+       << frameCount++ << ".bmp";
+  std::string filename( strm.str() );
+  std::cout << "Making frame: " << filename << std::endl;
+  SDL_SaveBMP(screen, filename.c_str());
+}
+
+void Manager::update() {
+  ++clock;
+  Uint32 ticks = clock.getElapsedTicks();
+  for (unsigned int i = 0; i < evilsprites.size(); ++i) {
+    evilsprites[i]->update(ticks);
+  }
+  checkForCollisions();
+  for (unsigned int i = 0; i < sprites.size(); ++i) {
+    sprites[i]->update(ticks);
+  }
+  meteors.update(ticks);
+
+  if ( makeVideo && frameCount < frameMax ) {
+    makeFrame();
+  }
+
+  world1.update();
+  world2.update();
+  world3.update();
+  world4.update();
+  world5.update();
+
+  meteorsTime += ticks ;
+if(meteorsTime > 250){
+  double velocityfactor = getRandomFactor(1,2);
+  meteors.fall(Vector2f(viewport.X()+viewport.ViewWidth()/2+getRandomFactor(200,1000), 
+                    viewport.Y()),Vector2f(-100*velocityfactor,100*velocityfactor));
+  meteorsTime = 0;
+}
+  player.update(ticks);
+  player.stop();
+  viewport.update(); // always update viewport last
+}
+
+void Manager::resetgame() {
+  player.reset();
+  meteors.reset();
+}
+
+void Manager::play() {
+  SDL_Event event;
+
+  bool done = false;
+  // a boolean indicates whether user press a key in keyboard.
+  bool keyCatch = false;
+  while ( not done ) {
+    SDL_PollEvent(&event);
+    /*
+    Gets a snapshot of the current keyboard state. The current state is return as a pointer to an array, the size of this array is stored in numkeys. The array is indexed by the SDLK_* symbols. A value of 1 means the key is pressed and a value of 0 means its not. The pointer returned is a pointer to an internal SDL array and should not be freed by the caller.
+    Note:
+    Use SDL_PumpEvents to update the state array.
+    Example:
+    CWUint8 *keystate = SDL_GetKeyState(NULL);
+    if ( keystate[SDLK_RETURN] ) printf("Return Key Pressed.");
+    
+    so SDLK_t stands for "t" in keyboard, if user press "t" then the value of keystate[SDLK_t] should be 1.else it should be 0
+    */
+    Uint8 *keystate = SDL_GetKeyState(NULL);
+    if (event.type ==  SDL_QUIT) { done = true; break; }
+    if(event.type == SDL_KEYUP) { 
+      keyCatch = false; 
+      scan = false; 
+    }
+    if(event.type == SDL_KEYDOWN) {
+      if (keystate[SDLK_ESCAPE] || keystate[SDLK_q]) {
+        done = true;
+        break;
+      }
+    //cause "t" can change which sprite we are tracking to,so if "t" is pressed, then currentSprite should change to another one by +1.And if currentSprite is bigger than sprites.size,which means we are tracking the last sprite in vector sprites,then we should go back to the first one.  
+      /*
+      if (keystate[SDLK_t] && !keyCatch) {
+        keyCatch = true;
+        currentSprite = (currentSprite+1) % sprites.size();
+        viewport.setObjectToTrack(sprites[currentSprite]);
+      }
+      */
+      if (keystate[SDLK_s] && !keyCatch) {
+        keyCatch = true;
+        clock.toggleSloMo();
+      }
+/*
+      if (keystate[SDLK_DOWN] && !keyCatch && zoom > 0.5){
+        keyCatch = true;
+        scan = true;
+        oldzoom = zoom;
+        zoom -= 0.1;
+      }
+      if (keystate[SDLK_UP] && !keyCatch && zoom < 4.0) {
+        keyCatch = true;
+        scan = true;
+        oldzoom = zoom;
+        zoom += 0.1;
+      }
+
+      if (keystate[SDLK_LEFT] && !keyCatch){
+        keyCatch = true;
+        angle -= 90;
+      }
+      if (keystate[SDLK_RIGHT] && !keyCatch) {
+        keyCatch = true;
+        angle += 90;
+      }
+*/
+      if (keystate[SDLK_PLUS] || keystate[SDLK_EQUALS]) { 
+          SmartSprite::incrSafeDistance(); 
+      }
+      if (keystate[SDLK_MINUS]) { 
+          SmartSprite::decrSafeDistance();
+      }
+      if (keystate[SDLK_SPACE] && !keyCatch) {
+         keyCatch = true;
+         player.addShield();
+         sound[3];
+      }
+      if (keystate[SDLK_g] && !keyCatch) {
+         keyCatch = true;
+         player.addgodShield();
+         nocollisioncheck = !nocollisioncheck;
+         sound[3];
+      }
+      if (keystate[SDLK_r] && !keyCatch) {
+         keyCatch = true;
+         resetgame();
+      }
+      if (keystate[SDLK_LEFT]) {
+        player.left();
+      }
+      if (keystate[SDLK_RIGHT]) {
+        player.right();
+      }
+      if (keystate[SDLK_UP]) {
+        player.up();
+      }
+      if (keystate[SDLK_DOWN]) {
+        player.down();
+      }
+      if ((keystate[SDLK_DOWN]&&keystate[SDLK_UP])||(keystate[SDLK_LEFT]&&keystate[SDLK_RIGHT])) {
+        player.stop();
+      }
+      if (keystate[SDLK_p] && !keyCatch) {
+        keyCatch = true;
+          if ( clock.isPaused() ) clock.unpause();
+          else clock.pause();
+      }
+      if (keystate[SDLK_F4] && !makeVideo) {
+          std::cout << "Making video frames" << std::endl;
+          makeVideo = true;
+      }
+      if (keystate[SDLK_F1] && !keyCatch) {
+         keyCatch = true;
+         if(!showhud){
+           showhud = true;
+	       } 
+         else showhud = false;
+      }
+    }
+    
+    draw();
+    update();
+
+  }
+}

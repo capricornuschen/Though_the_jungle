@@ -1,0 +1,22 @@
+Name: ZIAN CHEN
+Clemson Email Address: zianc@g.clemson.edu
+
+Project no: 7
+Project due date: Sat, Dec 26, 12 AM
+Project description: complete video game
+
+The Specs that I implemented are: Complete all requirements.Which are below:
+1.Implement AI using evilsprite.
+2.The conclusion of this game is try to keep leopard running to the right boundary of the world without explosion.
+3.You can use "r" to restart game.
+4.Memory leak was well mantained using valgrind.
+5.Display hud with 3 seconds and then disappear with author's name on the bottom left corner of the screen.
+
+About final project:
+1. star will be one kind of enemy player should avoid attacked by. the player should open protection aura when star hits it.Or the player wll lose blood.And the dragon with fire will be the boss which player should fight with.
+2. In oder to win the game, the player should keep blood more than zero when it run through the forest and falling stars. Then it should void fire attack made by the dragon. When the player reach right boundary of the world withblood more than zero,it wins the game,otherwise it lose.
+
+The Specs that I was unable to implement are: None
+
+Extras: Complete below aspects 
+1.use object pooling to implement painter object reuse. The "star" which reach the ground will be set to the up corner again and again.

@@ -1,0 +1,40 @@
+#ifndef DRAGONSPRITE__H
+#define DRAGONSPRITE__H
+#include <string>
+#include <vector>
+#include "drawable.h"
+#include "bulletsprite.h"
+
+
+class DragonSprite : public Drawable {
+public:
+  DragonSprite(const std::string&);
+  DragonSprite(const DragonSprite&);
+  virtual ~DragonSprite() { } 
+
+  virtual void draw() const;
+  virtual void update(Uint32 ticks);
+  virtual const Frame* getFrame() const { 
+    return frames[currentFrame]; 
+  }
+
+private:
+  std::vector<Frame *> frames;
+  bool booRight;
+  int worldWidth;
+  int worldHeight;
+
+  std::vector<BulletSprite*> bullets;  
+  unsigned currentFrame;
+  unsigned numberOfFrames;
+  unsigned frameInterval;
+  float timeSinceLastFrame;
+  int frameWidth;
+  int frameHeight;
+
+  std::string frameName;
+
+  void advanceFrame(Uint32 ticks);
+};
+
+#endif
